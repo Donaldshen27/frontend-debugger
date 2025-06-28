@@ -1,0 +1,29 @@
+{
+  "name": "frontend-debugger",
+  "version": "1.0.0",
+  "description": "Automated frontend debugging system using n8n and Claude Code CLI",
+  "main": "n8n/scripts/monitor-claude.js",
+  "scripts": {
+    "start": "node n8n/scripts/monitor-claude.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "n8n",
+    "claude",
+    "frontend",
+    "testing",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.9"
+  }
+}

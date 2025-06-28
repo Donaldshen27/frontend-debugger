@@ -1,0 +1,308 @@
+{
+  "name": "Frontend Debugger Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "frontend-debug-start",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_start",
+      "name": "Start Debug Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "frontend-debug-start"
+    },
+    {
+      "parameters": {
+        "command": "cd /app && git init && git add . && git commit -m 'Checkpoint before frontend debugging'"
+      },
+      "id": "git_checkpoint",
+      "name": "Create Git Checkpoint",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd /app/frontend-debugger && TARGET_URL=\"{{ $json.targetUrl }}\" node n8n/scripts/monitor-claude.js"
+      },
+      "id": "launch_claude",
+      "name": "Launch Claude Monitor",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "frontend-debug-callback",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook_callback",
+      "name": "Claude Callback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 500],
+      "webhookId": "frontend-debug-callback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event }}",
+              "operation": "equals",
+              "value2": "page_complete"
+            }
+          ]
+        }
+      },
+      "id": "check_event_type",
+      "name": "Check Event Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE pages SET status = 'complete', completed_at = NOW(), token_count = {{ $json.data.tokenCount }} WHERE session_id = {{ $json.sessionId }} AND url = '{{ $json.data.url }}'"
+      },
+      "id": "update_page_status",
+      "name": "Update Page Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [650, 450],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Frontend Debugger DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event }}",
+              "operation": "equals",
+              "value2": "all_complete"
+            }
+          ]
+        }
+      },
+      "id": "check_complete",
+      "name": "Check If Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 550]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM session_summary WHERE id = {{ $json.sessionId }}"
+      },
+      "id": "get_summary",
+      "name": "Get Session Summary",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [850, 550],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Frontend Debugger DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "subject": "Frontend Debug Complete - {{ $json.target_url }}",
+        "text": "Debug session completed.\n\nTarget: {{ $json.target_url }}\nPages tested: {{ $json.completed_pages }}/{{ $json.total_pages }}\n\nIssues found:\n- Critical: {{ $json.critical_issues }}\n- High: {{ $json.high_issues }}\n- Medium: {{ $json.medium_issues }}\n- Low: {{ $json.low_issues }}\n\nTotal tokens used: {{ $json.total_tokens_used }}",
+        "toEmail": "{{ $node[\"Start Debug Request\"].json.notificationEmail }}"
+      },
+      "id": "send_notification",
+      "name": "Send Completion Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 550],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event }}",
+              "operation": "equals",
+              "value2": "error"
+            },
+            {
+              "value1": "={{ $json.event }}",
+              "operation": "equals", 
+              "value2": "claude_crashed"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "check_error",
+      "name": "Check For Errors",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 650]
+    },
+    {
+      "parameters": {
+        "message": "=Error in frontend debugging session {{ $json.sessionId }}:\n\nEvent: {{ $json.event }}\nError: {{ $json.data.error || $json.data.exitCode }}",
+        "additionalFields": {
+          "priority": 9,
+          "title": "Frontend Debug Error"
+        }
+      },
+      "id": "error_notification",
+      "name": "Send Error Alert",
+      "type": "n8n-nodes-base.pushover",
+      "typeVersion": 1,
+      "position": [650, 650],
+      "credentials": {
+        "pushoverApi": {
+          "id": "3",
+          "name": "Pushover"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Frontend Debugger Started\n\nTarget URL: {{ $json.targetUrl }}\nSession ID: {{ $node[\"Launch Claude Monitor\"].json.sessionId }}\n\nMonitoring Claude CLI...",
+        "options": {}
+      },
+      "id": "respond_webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "webhook_start": {
+      "main": [
+        [
+          {
+            "node": "git_checkpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "git_checkpoint": {
+      "main": [
+        [
+          {
+            "node": "launch_claude",
+            "type": "main", 
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "launch_claude": {
+      "main": [
+        [
+          {
+            "node": "respond_webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook_callback": {
+      "main": [
+        [
+          {
+            "node": "check_event_type",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "check_complete",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "check_error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_event_type": {
+      "main": [
+        [
+          {
+            "node": "update_page_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_complete": {
+      "main": [
+        [
+          {
+            "node": "get_summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_summary": {
+      "main": [
+        [
+          {
+            "node": "send_notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_error": {
+      "main": [
+        [
+          {
+            "node": "error_notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 2,
+  "tags": []
+}
