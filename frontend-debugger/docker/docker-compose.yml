@@ -46,7 +46,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: n8n start
+    command: start
     
   postgres-n8n:
     image: postgres:15-alpine
