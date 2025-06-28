@@ -1,0 +1,81 @@
+{
+  "name": "Frontend Debugger (Working)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "frontend-debug-start",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook_start",
+      "name": "Webhook Start",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the target URL from webhook\nconst targetUrl = $input.item.json.targetUrl || 'https://example.com';\nconst email = $input.item.json.notificationEmail || 'donaldshen27@gmail.com';\n\n// Log for debugging\nconsole.log('Starting frontend debug for:', targetUrl);\n\n// Return data for next nodes\nreturn {\n  targetUrl: targetUrl,\n  email: email,\n  sessionId: new Date().getTime(),\n  status: 'starting'\n};"
+      },
+      "id": "process_input",
+      "name": "Process Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd /app/frontend-debugger && echo \"Starting debug session for: $(echo '{{$json.targetUrl}}')\" && TARGET_URL=\"{{$json.targetUrl}}\" node n8n/scripts/monitor-claude.js || echo \"Monitor script failed\""
+      },
+      "id": "launch_monitor",
+      "name": "Launch Monitor", 
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "started"
+            },
+            {
+              "name": "message",
+              "value": "Frontend debugging session started"
+            },
+            {
+              "name": "targetUrl",
+              "value": "={{$json.targetUrl}}"
+            },
+            {
+              "name": "sessionId",
+              "value": "={{$json.sessionId}}"
+            }
+          ]
+        }
+      },
+      "id": "webhook_response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Start": {
+      "main": [[{"node": "Process Input", "type": "main", "index": 0}]]
+    },
+    "Process Input": {
+      "main": [[{"node": "Launch Monitor", "type": "main", "index": 0}]]
+    },
+    "Launch Monitor": {
+      "main": [[{"node": "Webhook Response", "type": "main", "index": 0}]]
+    }
+  }
+}

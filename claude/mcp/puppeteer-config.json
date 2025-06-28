@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "puppeteer": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--init",
+        "-e",
+        "DOCKER_CONTAINER=true",
+        "mcp/puppeteer"
+      ],
+      "transport": "stdio",
+      "env": {
+        "PUPPETEER_HEADLESS": "false",
+        "PUPPETEER_DEFAULT_VIEWPORT_WIDTH": "1920",
+        "PUPPETEER_DEFAULT_VIEWPORT_HEIGHT": "1080"
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "name": "Frontend Debugger (Minimal)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "frontend-debug-start",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook_start",
+      "name": "Webhook Start",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "echo 'Starting frontend debug for: {{ $json.targetUrl }}'"
+      },
+      "id": "echo_test",
+      "name": "Echo Test",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "started"
+            },
+            {
+              "name": "targetUrl", 
+              "value": "={{ $node[\"Webhook Start\"].json.targetUrl }}"
+            },
+            {
+              "name": "message",
+              "value": "Frontend debugging session started successfully!"
+            }
+          ]
+        }
+      },
+      "id": "set_response",
+      "name": "Set Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Start": {
+      "main": [
+        [
+          {
+            "node": "Echo Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Echo Test": {
+      "main": [
+        [
+          {
+            "node": "Set Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "Simple Frontend Debug Test",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Test Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "Frontend debugger is working\! URL: {{ $json.targetUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set",
+      "name": "Set Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [450, 300]
+    }
+  ],
+  "connections": {
+    "Test Webhook": {
+      "main": [[{"node": "Set Response", "type": "main", "index": 0}]]
+    }
+  }
+}
+EOF < /dev/null

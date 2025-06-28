@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: frontend_debugger
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "6666:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://n8n:5678/
+      - N8N_DATABASE_TYPE=postgresdb
+      - N8N_DATABASE_POSTGRES_HOST=postgres
+      - N8N_DATABASE_POSTGRES_PORT=5432
+      - N8N_DATABASE_POSTGRES_DATABASE=n8n
+      - N8N_DATABASE_POSTGRES_USER=postgres
+      - N8N_DATABASE_POSTGRES_PASSWORD=postgres
+      - N8N_DATABASE_POSTGRES_SCHEMA=public
+      - NODE_ENV=production
+      - N8N_METRICS=true
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ../:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start
+    
+  postgres-n8n:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: n8n
+    volumes:
+      - postgres_n8n_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - postgres-n8n
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      
+  # Optional: Puppeteer service if not using Docker-in-Docker
+  # puppeteer:
+  #   image: mcp/puppeteer:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - PUPPETEER_HEADLESS=false
+  #     - PUPPETEER_DEFAULT_VIEWPORT_WIDTH=1920
+  #     - PUPPETEER_DEFAULT_VIEWPORT_HEIGHT=1080
+  #   volumes:
+  #     - puppeteer_data:/data
+
+volumes:
+  postgres_data:
+  postgres_n8n_data:
+  n8n_data:
+  # puppeteer_data:
