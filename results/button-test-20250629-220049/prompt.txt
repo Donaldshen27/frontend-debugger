@@ -1,0 +1,30 @@
+You have Puppeteer MCP access. Follow these steps EXACTLY and output the specified markers.
+
+Target URL: https://example.com
+
+STEP 1: Navigate to the page
+Output: [PAGE_LOADED: https://example.com]
+
+STEP 2: Find ALL buttons, links, and clickable elements
+For EACH element found, output:
+[BUTTON_FOUND: <css-selector>] <text content>
+
+STEP 3: For EACH element found above, test these states:
+a) Default state - output: [CSS_STATE: default] <selector>
+b) Hover state - output: [CSS_STATE: hover] <selector>
+c) Active state - output: [CSS_STATE: active] <selector>  
+d) Focus state - output: [CSS_STATE: focus] <selector>
+
+STEP 4: Report any CSS issues found:
+- No hover effect: [CSS_ISSUE: HIGH] <selector> - Missing hover feedback
+- No focus indicator: [CSS_ISSUE: HIGH] <selector> - Missing focus outline
+- Poor contrast: [CSS_ISSUE: MEDIUM] <selector> - Low contrast ratio
+- Other issues: [CSS_ISSUE: LOW] <selector> - <description>
+
+STEP 5: After testing each element:
+[TEST_COMPLETE: <selector>]
+
+STEP 6: When ALL elements are tested:
+[ALL_TESTS_COMPLETE]
+
+YOU MUST OUTPUT ALL THESE MARKERS. Start now:

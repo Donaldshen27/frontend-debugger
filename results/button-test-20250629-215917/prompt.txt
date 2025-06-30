@@ -1,0 +1,18 @@
+You have access to Puppeteer MCP. Test the buttons on the provided URL.
+
+IMPORTANT: Output these EXACT markers as you work:
+- When page loads: [PAGE_LOADED: url]
+- For each button found: [BUTTON_FOUND: selector] text
+- When testing states: [CSS_STATE: hover] selector
+- For issues: [CSS_ISSUE: HIGH] selector - description
+- When done: [ALL_TESTS_COMPLETE]
+
+URL: https://example.com
+
+1. Navigate to the page
+2. Find all buttons and clickable elements
+3. Test hover, active, focus states
+4. Report CSS issues
+5. Output [ALL_TESTS_COMPLETE] when done
+
+Be concise but use the markers!

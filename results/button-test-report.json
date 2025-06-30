@@ -1,0 +1,64 @@
+{
+  "url": "https://example.com",
+  "timestamp": "2025-06-30T12:00:00.000Z",
+  "summary": {
+    "totalElements": 1,
+    "totalIssues": 2,
+    "criticalIssues": 0,
+    "highIssues": 1,
+    "mediumIssues": 0,
+    "lowIssues": 1
+  },
+  "elements": [
+    {
+      "selector": "a",
+      "text": "More information...",
+      "type": "link",
+      "states": {
+        "default": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(56, 72, 143)",
+          "border": "0px none rgb(56, 72, 143)"
+        },
+        "hover": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(56, 72, 143)",
+          "border": "0px none rgb(56, 72, 143)"
+        },
+        "active": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(56, 72, 143)",
+          "border": "0px none rgb(56, 72, 143)"
+        },
+        "focus": {
+          "outline": "rgb(56, 72, 143) none 0px",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      },
+      "issues": [
+        {
+          "severity": "HIGH",
+          "description": "Missing visible focus indicator"
+        },
+        {
+          "severity": "LOW",
+          "description": "No visual hover state differentiation"
+        }
+      ]
+    }
+  ],
+  "viewportTests": {
+    "375": {
+      "passed": true,
+      "issues": []
+    },
+    "768": {
+      "passed": true,
+      "issues": []
+    },
+    "1920": {
+      "passed": true,
+      "issues": []
+    }
+  }
+}

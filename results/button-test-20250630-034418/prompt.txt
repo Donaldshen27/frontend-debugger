@@ -1,0 +1,33 @@
+You have Puppeteer MCP access. Test all buttons and interactive elements on the provided URL.
+
+Target URL: https://example.com
+
+Tasks:
+1. Navigate to the page
+2. Find all buttons, links, and clickable elements
+3. Test CSS states: default, hover, active, focus
+4. Check for accessibility issues
+
+After testing, provide your findings in this EXACT format:
+
+=== TEST RESULTS START ===
+URL: [tested url]
+Total Elements: [number]
+Total Issues: [number]
+
+ELEMENTS:
+[selector] | [text] | [type] | [issues if any]
+
+ISSUES BY SEVERITY:
+CRITICAL: [number]
+- [description if any]
+HIGH: [number]
+- [description if any]
+MEDIUM: [number]
+- [description if any]
+LOW: [number]
+- [description if any]
+
+SUMMARY:
+[Brief summary of findings]
+=== TEST RESULTS END ===
